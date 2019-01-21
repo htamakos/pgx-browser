@@ -133,8 +133,6 @@
         const COLUMN_DEST_NODE_ID = "DVID"
         const COLUMN_EDGE_ID = "EID"
 
-        var pgql_text = document.getElementById(TEXT_AREA_ID).value
-
         drawList = (rows) => {
             var nodes = new PGQLViwer.vis.DataSet();
             var edges = new PGQLViwer.vis.DataSet();
@@ -187,6 +185,7 @@
         }
 
         button.onclick = () => {
+            var pgql_text = document.getElementById(TEXT_AREA_ID).value
             PGQLViwer.drawGraph(PGQLViwer.G, pgql_text, drawList);
         }
     </script>
