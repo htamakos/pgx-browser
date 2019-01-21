@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PGX Browser</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <!-- Bulma Version 0.7.2-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+    <link rel="stylesheet" type="text/css" href="../css/admin.css">
+    <script async type="text/javascript" src="bundle.js"></script>
+</head>
+
+<body>
+
+    <!-- START NAV -->
+    <nav class="navbar is-white">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item brand-text" href="../">
+                    <img src="https://docs.oracle.com/cd/E56133_01/latest/images/pgx-icon3.png">
+                    PGX
+                </a>
+                <div class="navbar-burger burger" data-target="navMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div id="navMenu" class="navbar-menu">
+                <div class="navbar-end">
+                    <a class="navbar-item" href="admin.html">Account</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- END NAV -->
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3 ">
+                <aside class="menu is-hidden-mobile">
+                    <p class="menu-label">
+                        General
+                    </p>
+                    <ul class="menu-list">
+                        <li><a class="is-active">PGQLPLUS</a></li>
+                        <li><a>PGX Terminal</a></li>
+                    </ul>
+                    <p class="menu-label">
+                        Administration
+                    </p>
+                    <ul class="menu-list">
+                        <li><a>Server Settings</a></li>
+                        <li><a>Manage Users</a></li>
+                        <li><a>Authentication</a></li>
+                    </ul>
+                </aside>
+            </div>
+            <div class="column is-9">
+                <nav class="breadcrumb" aria-label="breadcrumbs">
+                    <ul>
+                        <li><a href="../">Home</a></li>
+                        <li class="is-active"><a href="#" aria-current="page">PGQLPLUS</a></li>
+                    </ul>
+                </nav>
+                <section class="hero is-info welcome is-small">
+                    <div class="hero-body">
+                        <div class="container">
+                            <h1 class="title">
+                                PGX Browser
+                            </h1>
+                            <h2 class="subtitle">
+                                PGQLPLUS
+                            </h2>
+                        </div>
+                    </div>
+                </section>
+                <div class="column">
+                    <h3 id="sizes" class="title is-4 is-spaced bd-anchor-title">
+                        <a class="bd-anchor-link" href="#pgql-editor">#</a>
+                        <span class="bd-anchor-name">Editor</span>                            
+                    </h3>
+                    <article class="message is-primary">
+                        <div class="message-body">
+                        SVID: Source Vertex ID, DVID: Destination Vertex ID
+                        <span class="icon has-text-primary">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        </div>
+                    </article>
+                    <article class="media">
+                        <div class="media-content">
+                            <div class="field">
+                                <p class="control">
+                                    <textarea class="textarea" rows=3 id="P3_PGQL_EDITOR_TEXT_AREA">SELECT id(n1) as SVID, id(n2) as DVID MATCH (n1)->(n2)
+                                    </textarea>
+                                </p>
+                            </div>
+                            <nav class="level">
+                              <div class="level-left">
+                                <div class="level-item">
+                                  <button id="submit-pgql" class="button is-info">Submit</a>
+                                </div>
+                              </div>
+                              <div class="level-right">
+                                <div class="level-item">
+                                  <label class="checkbox">
+                                    <input type="checkbox"> Press enter to submit
+                                  </label>
+                                </div>
+                              </div>
+                            </nav>
+                        </div>
+                    </article>
+                </div>
+                <div class="column">
+                    <div id="pgql_graph_canvas"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var button = document.getElementById('submit-pgql');
+        var PGQLViwer = window.PGQLViwer || {};
+
+        const TEXT_AREA_ID = "P3_PGQL_EDITOR_TEXT_AREA"
+        const DEFAULT_GRAPH_CANVAS_ID = "pgql_graph_canvas";
+        const COLUMN_SOURCE_NODE_ID = "SVID"
+        const COLUMN_DEST_NODE_ID = "DVID"
+        const COLUMN_EDGE_ID = "EID"
+
+        var pgql_text = document.getElementById(TEXT_AREA_ID).value
+
+        drawList = (rows) => {
+            var nodes = new PGQLViwer.vis.DataSet();
+            var edges = new PGQLViwer.vis.DataSet();
+
+            rows.forEach(row =>{
+                svid = row[COLUMN_SOURCE_NODE_ID];
+                dvid = row[COLUMN_DEST_NODE_ID];
+
+                if(!nodes.get(svid)){
+                    nodes.add({ id: svid });
+                }
+
+                if(!nodes.get(dvid)){
+                    nodes.add({ id: dvid });
+                }
+                edges.add({ from: row[COLUMN_SOURCE_NODE_ID], to: row[COLUMN_DEST_NODE_ID]});
+            })
+
+            var options = {
+                  autoResize: true,
+                  height: '400px',
+                  width: '100%',
+                  physics: false, 
+                  interaction: {
+                        navigationButtons: true,
+                        keyboard: true,
+                        hover:true
+                  },
+                  nodes: {
+                        shape: 'box', 
+                        size: 20, 
+                        font: {
+                          boldital: { color: 'pink' }, 
+                          ital: { color: 'orange' }, 
+                          mono: { color: 'blue' }, 
+                          bold: { color: 'purple' },
+                          color: 'yellow',
+                        },
+                        color: "skyblue"
+                  },
+                  edges: {
+                        arrows: 'to', 
+                        smooth: false
+                  },
+            };
+
+            var data = { nodes: nodes,  edges: edges}
+            var container = document.getElementById(DEFAULT_GRAPH_CANVAS_ID);
+            var network = new PGQLViwer.vis.Network(container, data, options);
+        }
+
+        button.onclick = () => {
+            PGQLViwer.drawGraph(PGQLViwer.G, pgql_text, drawList);
+        }
+    </script>
+</body>
+</html>
+
